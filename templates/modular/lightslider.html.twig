@@ -73,10 +73,22 @@
     {% elseif settings.slider_type == 'meta' %}
     <ul id="{{ unique_id }}">
         {% for image in page.media.images %}
+            {{ dump(image.thumbnail('default').display('thumbnail').url()) }}
+            {{ dump(image.thumbnail('page').display('thumbnail').url()) }}
+            {{ dump(image.thumbnail('page').display('thumbnail').html()) }}
+            {{ dump(image.thumbnail('media').display('thumbnail').url()) }}
+            {{ dump(image.thumbnail('media').display('thumbnail').html()) }}
+
             {% if settings.gallery %}
-                {% set image_data_thumb = 'data-thumb=\"'~image.cropResize(settings.gallery_thumb_width|default(100),settings.gallery_thumb_height|default(100)).url~'\"' %} {# TODO: check if there's a thumb file first! #}
+                {% if image.items.thumbnails.page is defined %}
+                    {% set parts = pathinfo(image.items.thumbnails.page) %}
+                    {% set thumb_url = url('user://pages' ~ page.url ~ '/' ~ parts.basename) %}
+                {% else %}
+                    {% set thumb_url = image.cropResize(settings.gallery_thumb_width|default(100),settings.gallery_thumb_height|default(100)).url %}
+                {% endif %}
+                {% set image_data_thumb = ' data-thumb="' ~ thumb_url ~ '"' %}
             {% endif %}
-            <li {{ image_data_thumb }}>
+            <li{{ image_data_thumb }}>
                 {% if image.meta.markup %}
                     {% set panel_image = image.brightness(image.meta.brightness|default(settings.type_text_brightness|default('-100'))).url %}
                     <div class="panel-bg" style="background-image: url('{{ panel_image ?? image.url }}');
